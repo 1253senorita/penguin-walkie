@@ -4,39 +4,53 @@
     <title>펭귄 무전기</title>
 </head>
 <body>
-    <div id="status" style="font-weight: bold;">서버 연결 대기 중...</div>
+    <div id="status" style="font-weight: bold; color: red;">서버 연결 대기 중...</div>
     <button id="talkBtn" style="width: 200px; height: 200px; border-radius: 50%; background: red; color: white; cursor: pointer; user-select: none;">
         PUSH TO TALK
     </button>
 
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script>
-        // 오빠의 로컬 서버 주소와 연결
         const socket = io('http://localhost:3000'); 
         const talkBtn = document.getElementById('talkBtn');
         const statusText = document.getElementById('status');
+        let mediaRecorder;
 
-        // [이벤트] 연결 성공 시
+        // 마이크 준비
+        navigator.mediaDevices.getUserMedia({ audio: true })
+            .then(stream => {
+                mediaRecorder = new MediaRecorder(stream);
+                mediaRecorder.ondataavailable = (event) => {
+                    socket.emit('voice-chunk', event.data); // 목소리 조각 전송
+                };
+            });
+
         socket.on('connect', () => {
             statusText.innerText = '무전기 연결됨! 🐧';
             statusText.style.color = 'blue';
         });
 
-        // [이벤트] 버튼 누를 때 (Controller 로직)
-        talkBtn.addEventListener('mousedown', () => {
-            talkBtn.style.background = 'orange';
-            socket.emit('start-talking'); // 서버로 신호 전송
-        });
+        // 버튼 누를 때: 녹음 시작
+        talkBtn.onmousedown = () => {
+            if (mediaRecorder && mediaRecorder.state === 'inactive') {
+                mediaRecorder.start(100); // 0.1초마다 전송
+                talkBtn.style.background = 'orange';
+            }
+        };
 
-        // [이벤트] 버튼 뗄 때
-        talkBtn.addEventListener('mouseup', () => {
-            talkBtn.style.background = 'red';
-            socket.emit('stop-talking'); // 서버로 중단 신호 전송
-        });
+        // 버튼 뗄 때: 녹음 중지
+        talkBtn.onmouseup = () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+                talkBtn.style.background = 'red';
+            }
+        };
 
-        socket.on('connect_error', () => {
-            statusText.innerText = '서버 연결 실패 (보안 설정을 확인하세요)';
-            statusText.style.color = 'red';
+        // 다른 사람 목소리 들릴 때 재생
+        socket.on('play-voice', (data) => {
+            const blob = new Blob([data], { type: 'audio/webm' });
+            const audio = new Audio(URL.createObjectURL(blob));
+            audio.play();
         });
     </script>
 </body>
