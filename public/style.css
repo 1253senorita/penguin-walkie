@@ -1,18 +1,122 @@
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: sans-serif; background-color: #e5ddd5; display: flex; justify-content: center; height: 100vh; }
-#app-container { width: 100%; max-width: 450px; background: white; display: flex; flex-direction: column; }
-header { padding: 20px; background: #075e54; color: white; text-align: center; font-weight: bold; }
-
-#talkBtn { 
-    width: 150px; height: 150px; border-radius: 50%; background: red; color: white; 
-    cursor: pointer; user-select: none; font-weight: bold; border: 5px solid #333; margin: 10px auto; display: block;
+* { 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
 }
 
-#chat-box { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; background: #e5ddd5; }
-.message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 14px; line-height: 1.4; }
+body { 
+    font-family: sans-serif; 
+    background-color: #e5ddd5; 
+    /* 화면이 옆으로 삐져나가지 않게 가로세로 고정 */
+    width: 100vw; 
+    height: 100vh; 
+    display: flex; 
+    justify-content: center; 
+    overflow: hidden; /* 전체 스크롤 방지 */
+    position: fixed; /* 폰에서 화면 밀림 방지 */
+}
+
+#app-container { 
+    width: 100%; 
+    max-width: 450px; 
+    background: white; 
+    display: flex; 
+    flex-direction: column; 
+    /* 폰 화면 높이에서 위아래 여백 없이 꽉 채우기 */
+    height: 100%; 
+    position: relative;
+}
+
+header { 
+    padding: 15px; 
+    background: #075e54; 
+    color: white; 
+    text-align: center; 
+    font-weight: bold; 
+    flex-shrink: 0; /* 헤더 크기 고정 */
+}
+
+/* 무전기 영역 */
+.radio-section { 
+    text-align: center; 
+    padding: 15px; 
+    background: #fff; 
+    border-bottom: 1px solid #ddd; 
+    flex-shrink: 0; 
+}
+
+#status { font-weight: bold; color: blue; margin-bottom: 10px; font-size: 16px; }
+
+#talkBtn { 
+    width: 140px; height: 140px; border-radius: 50%; background: red; color: white; 
+    cursor: pointer; user-select: none; font-weight: bold; border: 5px solid #333; 
+    margin: 5px auto; display: block;
+}
+
+/* 채팅 영역 - 여기가 유연하게 늘어남 */
+#chat-box { 
+    flex: 1; 
+    overflow-y: auto; 
+    padding: 15px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    background: #e5ddd5; 
+}
+
+.message { padding: 10px 15px; border-radius: 15px; max-width: 80%; font-size: 16px; line-height: 1.4; }
 .user { align-self: flex-end; background: #dcf8c6; }
 .ai { align-self: flex-start; background: #fff; border: 1px solid #ddd; }
 
-#input-area { padding: 15px; display: flex; gap: 10px; background: #f0f0f0; }
-#user-input { flex: 1; padding: 10px; border: none; border-radius: 20px; outline: none; }
-#send-btn { background: #075e54; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+
+
+#input-area { 
+    display: flex; 
+    gap: 10px; 
+    background: #f0f0f0; 
+    align-items: center;
+    flex-shrink: 0;
+    border-top: 1px solid #ddd;
+    width: 100%;
+    /* [오빠의 재단] 양옆 30px, 하단 안전여백 + 60px 적용 */
+    padding: 20px 30px calc(env(safe-area-inset-bottom) + 60px) 30px !important; 
+}
+
+#file-label {
+    background: #ddd; 
+    width: 45px; 
+    height: 45px; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    border-radius: 50%; 
+    font-size: 24px; 
+    cursor: pointer; 
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+#user-input { 
+    flex: 1; 
+    padding: 12px; 
+    border: 1px solid #ccc; 
+    border-radius: 20px; 
+    outline: none; 
+    font-size: 16px;
+    min-width: 0; 
+}
+
+#send-btn { 
+    background: #075e54; 
+    color: white; 
+    border: none; 
+    padding: 12px 18px; 
+    border-radius: 20px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    font-size: 16px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

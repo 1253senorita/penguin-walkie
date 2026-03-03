@@ -2,6 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>펭귄 무전기</title>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -9,15 +10,18 @@
     <div id="app-container">
         <header>🐧 펭귄 무전기 & 톡</header>
         
-        <div style="text-align: center; padding: 20px; border-bottom: 1px solid #ddd;">
-            <div id="status" style="font-weight: bold; color: red; margin-bottom: 10px;">기지국 찾는 중... 📡</div>
+        <div class="radio-section">
+            <div id="status">기지국 찾는 중... 📡</div>
             <button id="talkBtn">PUSH TO TALK</button>
         </div>
 
         <div id="chat-box"></div>
 
         <div id="input-area">
-            <input type="text" id="user-input" placeholder="메시지 입력...">
+            <label for="file-input" id="file-label">+</label>
+            <input type="file" id="file-input" accept="image/*" style="display: none;">
+            
+            <input type="text" id="user-input" placeholder="메시지 입력..." autocomplete="off">
             <button id="send-btn">전송</button>
         </div>
     </div>
