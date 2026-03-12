@@ -1,0 +1,1 @@
+...\public\modules\bear-talkie\js\app.js

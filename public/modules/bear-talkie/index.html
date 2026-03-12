@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>BEAR-Talkie (PeerJS)</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; flex-direction: column; height: 100vh; background: #1a1a1a; color: #fff; font-family: sans-serif; overflow: hidden; }
+        .container { display: flex; flex-direction: column; flex: 1; padding: 15px; gap: 10px; }
+        .display-zone { flex: 1.5; background: #252525; border: 2px solid #3d3d3d; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .vu-meter { display: flex; align-items: flex-end; gap: 4px; height: 50px; margin-bottom: 10px; }
+        .bar { width: 8px; height: 5px; background: #00ff00; border-radius: 1px; transition: height 0.05s; }
+        .chat-zone { flex: 2; background: #111; border-radius: 8px; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; border: 1px solid #333; }
+        .control-zone { flex: 1; display: flex; justify-content: center; align-items: center; }
+        .ptt-btn { width: 120px; height: 120px; border-radius: 50%; border: none; background: radial-gradient(circle, #ff4b2b, #ff416c); color: #fff; font-weight: bold; cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+        .ptt-btn:active { background: #f00; transform: scale(0.95); }
+        #audio-unlock { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 12px; font-weight: bold; color: #ffeb3b; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="display-zone">
+            <div id="audio-unlock">🔈 시스템 활성화 (클릭)</div>
+            <div class="vu-meter">
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+            </div>
+            <div id="status-display" style="font-size: 1.5rem; font-weight: bold;">STANDBY</div>
+            <div id="my-id" style="font-size: 0.8rem; color: #888; margin-top: 10px;">ID 연결 중...</div>
+        </div>
+        <div class="chat-zone" id="chat-box"></div>
+        <div class="control-zone">
+            <button class="ptt-btn" id="ptt-trigger">PTT ON</button>
+        </div>
+    </div>
+
+<script>
+    const socket = io();
+    const pttBtn = document.getElementById('ptt-trigger');
+    const display = document.getElementById('status-display');
+    const myIdTag = document.getElementById('my-id');
+    const bars = document.querySelectorAll('.bar');
+
+    let myStream, activeCalls = [];
+    let audioContext;
+
+    // 1. PeerJS 초기화
+    const peer = new Peer();
+
+    peer.on('open', (id) => {
+        myIdTag.innerText = "MY ID: " + id;
+        socket.emit('register-peer', id);
+    });
+
+    // 2. 음성 수신부
+    peer.on('call', (call) => {
+        call.answer(); 
+        call.on('stream', (remoteStream) => {
+            playStream(remoteStream);
+        });
+    });
+
+    function playStream(stream) {
+        // 기존 오디오 객체 생성 및 자동 재생 방지 우회
+        const audio = new Audio();
+        audio.srcObject = stream;
+        
+        display.innerText = "RECEIVING...";
+        display.style.color = "#00ff00";
+
+        audio.play().catch(err => console.error("재생 실패:", err));
+
+        // 스트림 종료 시 상태 복구
+        stream.onremovetrack = () => {
+            display.innerText = "STANDBY";
+            display.style.color = "#fff";
+        };
+    }
+
+    // 3. 음성 송신 (PTT) - mousedown/touchstart 지원
+    const startTalking = async (e) => {
+        e.preventDefault();
+        if (!myStream) {
+            try {
+                myStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            } catch (err) {
+                alert("마이크 권한이 필요합니다.");
+                return;
+            }
+        }
+        
+        display.innerText = "TALKING...";
+        display.style.color = "#ff4b2b";
+        socket.emit('get-peers');
+    };
+
+    const stopTalking = () => {
+        activeCalls.forEach(call => call.close());
+        activeCalls = [];
+        display.innerText = "STANDBY";
+        display.style.color = "#fff";
+    };
+
+    pttBtn.addEventListener('mousedown', startTalking);
+    window.addEventListener('mouseup', stopTalking);
+    pttBtn.addEventListener('touchstart', startTalking);
+    window.addEventListener('touchend', stopTalking);
+
+    socket.on('peer-list', (peerIds) => {
+        peerIds.forEach(targetId => {
+            if (targetId !== peer.id) {
+                const call = peer.call(targetId, myStream);
+                activeCalls.push(call);
+            }
+        });
+    });
+
+    // 시스템 활성화 버튼 (AudioContext 및 오디오 잠금 해제)
+    document.getElementById('audio-unlock').addEventListener('click', function() {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        audioContext.resume();
+        this.style.display = 'none';
+        console.log("System Ready");
+    });
+</script>
+</body>
+</html>

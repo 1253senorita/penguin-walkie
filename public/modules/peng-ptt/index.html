@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>WIKI-ROUTER v1.0</title>
+    <style>
+        /* 🎨 최신 트렌드 플렉스박스 디자인 */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: #0a0a0a; color: #fff; font-family: 'Segoe UI', sans-serif; height: 100vh; display: flex; overflow: hidden; }
+
+        /* 📁 사이드바: 메뉴 영역 */
+        .sidebar { width: 240px; background: #121212; border-right: 1px solid #333; display: flex; flex-direction: column; padding: 20px; }
+        .logo { font-size: 1.4rem; font-weight: bold; color: #3498db; margin-bottom: 40px; text-align: center; letter-spacing: 2px; }
+        .nav-item { padding: 15px; margin-bottom: 12px; border-radius: 10px; cursor: pointer; transition: 0.3s; background: #1a1a1a; text-align: center; border: 1px solid transparent; }
+        .nav-item:hover { background: #222; border-color: #3498db; color: #3498db; }
+        .nav-item.active { background: #3498db; color: #fff; }
+
+        /* 🖥️ 메인 조종석: 컨텐츠 영역 */
+        .main-view { flex: 1; display: flex; flex-direction: column; background: #000; }
+        .top-status { height: 50px; background: #121212; display: flex; align-items: center; padding: 0 20px; border-bottom: 1px solid #333; font-size: 0.9rem; color: #888; }
+        .module-container { flex: 1; position: relative; }
+        iframe { border: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: none; }
+        iframe.active { display: block; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="logo">WIKI-ROUTER</div>
+        <div class="nav-item active" onclick="switchMod(this, 'bear')">🐻 BEAR-Talkie</div>
+        <div class="nav-item" onclick="switchMod(this, 'peng')">🐧 PENG-PTT</div>
+        <div style="margin-top: auto; font-size: 0.7rem; color: #444; text-align: center;">v1.0.0 Dual Engine</div>
+    </aside>
+
+    <main class="main-view">
+        <div class="top-status">
+            🟢 SYSTEM ONLINE | MODE: <span id="mode-text" style="color:#3498db; margin-left:5px;">BEAR-TALKIE</span>
+        </div>
+        <div class="module-container">
+            <iframe id="frame-bear" src="./modules/bear-talkie/index.html" class="active"></iframe>
+            <iframe id="frame-peng" src="./modules/peng-ptt/index.html"></iframe>
+        </div>
+    </main>
+
+    <script>
+        function switchMod(btn, target) {
+            // 버튼 활성화 스타일 변경
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 프레임 전환
+            document.querySelectorAll('iframe').forEach(el => el.classList.remove('active'));
+            const targetFrame = document.getElementById('frame-' + target);
+            targetFrame.classList.add('active');
+            
+            // 상단 텍스트 변경
+            document.getElementById('mode-text').innerText = target.toUpperCase() + (target === 'bear' ? '-TALKIE' : '-PTT CORE');
+            
+            // 💡 프레임 새로고침 (전환할 때마다 깨끗하게 연결)
+            targetFrame.src = targetFrame.src;
+        }
+    </script>
+</body>
+</html>
